@@ -1,0 +1,90 @@
+name: v0.4 governance smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/g4_bundle_audit.py'
+      - 'config/evidence_governance.yaml'
+      - 'vendor/CANDIDATE_SKILLS_V04.yaml'
+      - 'docs/G4_EXACT_FILE_LOCK.md'
+      - '.github/workflows/v04-governance-smoke.yml'
+  pull_request:
+    paths:
+      - 'scripts/g4_bundle_audit.py'
+      - 'config/evidence_governance.yaml'
+      - 'vendor/CANDIDATE_SKILLS_V04.yaml'
+      - 'docs/G4_EXACT_FILE_LOCK.md'
+      - '.github/workflows/v04-governance-smoke.yml'
+  workflow_dispatch:
+
+jobs:
+  g4-bundle-audit-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Python syntax
+        run: python -m py_compile scripts/g4_bundle_audit.py
+
+      - name: Build positive smoke bundle
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+
+          root = Path('/tmp/mmkit-v04-positive')
+          root.mkdir(parents=True, exist_ok=True)
+          (root / 'paper.pdf').write_bytes(b'%PDF-1.4\n% smoke placeholder\n%%EOF\n')
+          ai = b'%PDF-1.4\n% canonical AI placeholder\n%%EOF\n'
+          (root / 'AI.pdf').write_bytes(ai)
+          with zipfile.ZipFile(root / 'support.zip', 'w', compression=zipfile.ZIP_DEFLATED) as z:
+              z.writestr('AI工具使用详情.pdf', ai)
+              z.writestr('README.md', '# smoke\n')
+              z.writestr('code/smoke.py', 'print("ok")\n')
+          PY
+
+          python scripts/g4_bundle_audit.py \
+            --paper /tmp/mmkit-v04-positive/paper.pdf \
+            --ai /tmp/mmkit-v04-positive/AI.pdf \
+            --support /tmp/mmkit-v04-positive/support.zip \
+            --extract-dir /tmp/mmkit-v04-positive/extracted \
+            --json-out /tmp/mmkit-v04-positive/report.json
+
+          python - <<'PY'
+          import json
+          p = json.load(open('/tmp/mmkit-v04-positive/report.json', encoding='utf-8'))
+          assert p['status'] == 'PASS', p
+          assert p['ai_byte_identity'] is True, p
+          assert p['blocker_count'] == 0, p
+          PY
+
+      - name: Negative smoke catches AI byte mismatch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+
+          root = Path('/tmp/mmkit-v04-negative')
+          root.mkdir(parents=True, exist_ok=True)
+          (root / 'paper.pdf').write_bytes(b'paper')
+          (root / 'AI.pdf').write_bytes(b'canonical-ai')
+          with zipfile.ZipFile(root / 'support.zip', 'w') as z:
+              z.writestr('AI工具使用详情.pdf', b'different-ai')
+          PY
+
+          set +e
+          python scripts/g4_bundle_audit.py \
+            --paper /tmp/mmkit-v04-negative/paper.pdf \
+            --ai /tmp/mmkit-v04-negative/AI.pdf \
+            --support /tmp/mmkit-v04-negative/support.zip \
+            --extract-dir /tmp/mmkit-v04-negative/extracted
+          rc=$?
+          set -e
+          test "$rc" -eq 2
