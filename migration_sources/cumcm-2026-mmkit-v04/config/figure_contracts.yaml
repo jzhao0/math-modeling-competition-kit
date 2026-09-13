@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "page": {
+    "blank_page_is_error": true,
+    "abnormal_blank_ratio_warning": 0.72,
+    "expected_body_pages_min": 1,
+    "expected_body_pages_max": 40
+  },
+  "orphan_heading": {
+    "bottom_ratio": 0.78,
+    "minimum_following_words": 8,
+    "levels": ["section", "subsection"]
+  },
+  "captions": {
+    "figure_pattern": "图\\s*(\\d+)",
+    "table_pattern": "表\\s*(\\d+)",
+    "top_ratio_warning": 0.08,
+    "bottom_ratio_warning": 0.90
+  },
+  "latex": {
+    "require_figure_labels": true,
+    "require_figure_references": true,
+    "figure_label_prefix": "fig:",
+    "table_label_prefix": "tab:"
+  }
+}

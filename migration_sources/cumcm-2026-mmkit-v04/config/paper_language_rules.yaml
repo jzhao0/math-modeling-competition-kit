@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "literal_rules": [
+    {"level": "ERROR", "id": "META_NEEDS_ANSWER", "pattern": "本文需要回答", "message": "删除面向执行器的任务元话语。"},
+    {"level": "ERROR", "id": "PLACEHOLDER_FIGURE_CONCLUSION", "pattern": "图后结论", "message": "图后必须写实际结论，不能保留占位词。"},
+    {"level": "ERROR", "id": "INTERNAL_GATE_TOKEN", "pattern": "(?i)(?<![A-Za-z0-9_])(?:G[1-4]\\s+(?:FINAL\\s+)?PASS|FINAL\\s+PASS|GATE_STATUS|CENTRAL_REVIEW|B1\\.\\d+|LOCKED\\s+RESULT|FREEZE|FROZEN)(?![A-Za-z0-9_])", "regex": true, "message": "论文中不得出现明确的内部 Gate/冻结状态。"},
+    {"level": "ERROR", "id": "PIPELINE_TOKEN", "pattern": "(?i)(?<![A-Za-z0-9_])pipeline(?![A-Za-z0-9_])", "regex": true, "message": "论文中不得出现内部流水线术语。"},
+    {"level": "ERROR", "id": "MANIFEST_TOKEN", "pattern": "(?i)(?<![A-Za-z0-9_])manifest(?![A-Za-z0-9_])", "regex": true, "message": "论文中不得出现内部清单术语。"},
+    {"level": "ERROR", "id": "AGENT_LATEST_TOKEN", "pattern": "agent_latest", "message": "论文中不得出现 Agent 内部标识。"},
+    {"level": "ERROR", "id": "CLAIM_EVIDENCE_TOKEN", "pattern": "CLAIM_EVIDENCE", "message": "论文中不得出现证据台账文件名。"},
+    {"level": "ERROR", "id": "ASSUMPTION_LEDGER_TOKEN", "pattern": "ASSUMPTION_LEDGER", "message": "论文中不得出现假设台账文件名。"},
+    {"level": "ERROR", "id": "WINDOWS_PATH", "pattern": "(?i)(?:[A-Z]:\\\\(?:[^\\s\\\\]+\\\\)+[^\\s]*|[A-Z]:/(?:[^\\s/]+/)+[^\\s]*)", "regex": true, "message": "论文中不得出现 Windows 内部路径。"},
+    {"level": "WARNING", "id": "DIRECTLY_DETERMINES", "pattern": "直接决定", "message": "核查是否存在过强因果措辞。"},
+    {"level": "WARNING", "id": "MUST_ADOPT", "pattern": "必须采用", "message": "说明约束来源，避免无依据的绝对措辞。"},
+    {"level": "WARNING", "id": "NEED_EMPHASIZE", "pattern": "需要强调", "message": "直接陈述重要事实。"},
+    {"level": "WARNING", "id": "NEED_POINT_OUT", "pattern": "需要指出", "message": "直接陈述事实或结论。"},
+    {"level": "WARNING", "id": "WORTH_NOTING", "pattern": "值得注意的是", "message": "删除套话并直述信息。"},
+    {"level": "WARNING", "id": "EASY_TO_FIND", "pattern": "不难发现", "message": "补充证据或推导。"},
+    {"level": "WARNING", "id": "OBVIOUS", "pattern": "显而易见", "message": "补充证据或推导。"},
+    {"level": "WARNING", "id": "FINALLY_FALLS", "pattern": "最终落在", "message": "改为精确结果描述。"},
+    {"level": "WARNING", "id": "TWO_CONSIDERATIONS", "pattern": "有两层考虑", "message": "检查是否为机械分层。"},
+    {"level": "WARNING", "id": "CORROBORATES", "pattern": "印证了", "message": "说明独立证据关系，避免循环印证。"},
+    {"level": "WARNING", "id": "MECHANICAL_ENUMERATION", "pattern": "其一.{0,160}其二.{0,160}其三", "regex": true, "message": "检查机械三段式列举。"},
+    {"level": "WARNING", "id": "QUANTIFIED_EXCLUSION", "pattern": "量化排除", "message": "说明量化阈值与排除依据。"},
+    {"level": "WARNING", "id": "PRIMARY_EVALUATION", "pattern": "主评价", "message": "使用明确的评价指标名称。"},
+    {"level": "WARNING", "id": "AUX_EVALUATION", "pattern": "辅助评价", "message": "使用明确的评价指标名称。"}
+  ],
+  "metrics": {
+    "parentheses_per_500_chinese_warning": 12,
+    "dashes_per_500_chinese_warning": 4,
+    "paragraph_max_chars_warning": 800,
+    "sentence_max_chars_warning": 180,
+    "sentence_max_chars_strong_warning": 260,
+    "consecutive_benwen_paragraphs_warning": 3,
+    "consecutive_connector_sentences_warning": 3,
+    "connectors": ["因此", "说明", "表明"]
+  }
+}
