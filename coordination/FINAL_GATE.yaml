@@ -1,0 +1,18 @@
+schema_version: 1
+
+gates:
+  model_frozen: false
+  implementation_correct: false
+  cleanroom_reproduction: false
+  scientific_equivalence: false
+  paper_compile: false
+  citation_check: false
+  page_limit: false
+  support_package: false
+  appendix_support_match: false
+  path_scan: false
+  archive_integrity: false
+  hash_generated: false
+  final_freeze: false
+
+final_status: BLOCKED

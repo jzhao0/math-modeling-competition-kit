@@ -1,0 +1,14 @@
+schema_version: 1
+tasks: []
+
+# Recommended fields:
+# - id
+# - owner
+# - priority
+# - status
+# - input
+# - output
+# - ready_condition
+# - blocked_condition
+# - max_runtime_minutes
+# - do_not_expand_scope

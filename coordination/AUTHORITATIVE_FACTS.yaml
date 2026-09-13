@@ -1,0 +1,23 @@
+schema_version: 1
+
+project:
+  name: ""
+  competition: ""
+  problem: ""
+
+model:
+  status: UNDECIDED
+  formal_model: ""
+  frozen: false
+
+authoritative_outputs: []
+headline_claims: []
+
+production_core:
+  status: UNDECIDED
+  entrypoint: ""
+  files: []
+
+submission:
+  status: NOT_READY
+  final_integrator: ""
