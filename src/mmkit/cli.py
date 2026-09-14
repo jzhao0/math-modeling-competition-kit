@@ -6,6 +6,14 @@ import argparse
 import json
 from pathlib import Path
 
+from mmkit.benchmark import (
+    BenchmarkError,
+    build_baseline,
+    compare_to_baseline,
+    load_baseline,
+    run_benchmark,
+    write_json as write_benchmark_json,
+)
 from mmkit.coordination import (
     CoordinationError,
     checkpoint,
@@ -114,6 +122,34 @@ def _parser() -> argparse.ArgumentParser:
     paper_build.add_argument("build_manifest")
     paper_build.add_argument("--json", dest="json_path")
 
+    benchmark = sub.add_parser(
+        "benchmark", help="measure post-model-freeze algorithm/runtime performance"
+    )
+    benchmark_sub = benchmark.add_subparsers(dest="benchmark_command", required=True)
+
+    benchmark_run = benchmark_sub.add_parser(
+        "run", help="run warmups and repeated measured executions from a benchmark manifest"
+    )
+    benchmark_run.add_argument("root")
+    benchmark_run.add_argument("manifest")
+    benchmark_run.add_argument("--json", dest="json_path", required=True)
+
+    benchmark_lock = benchmark_sub.add_parser(
+        "lock", help="lock an explicit runtime/output baseline from a passing benchmark report"
+    )
+    benchmark_lock.add_argument("report")
+    benchmark_lock.add_argument("--output", required=True)
+    benchmark_lock.add_argument("--max-regression-percent", required=True, type=float)
+    benchmark_lock.add_argument("--ignore-output-identity", action="store_true")
+    benchmark_lock.add_argument("--require-same-environment", action="store_true")
+
+    benchmark_compare = benchmark_sub.add_parser(
+        "compare", help="compare a passing benchmark report against a locked baseline"
+    )
+    benchmark_compare.add_argument("report")
+    benchmark_compare.add_argument("baseline")
+    benchmark_compare.add_argument("--json", dest="json_path")
+
     coord = sub.add_parser("coord", help="manage context-resilient multi-agent task state")
     coord_sub = coord.add_subparsers(dest="coord_command", required=True)
 
@@ -199,6 +235,49 @@ def _parser() -> argparse.ArgumentParser:
     coord_status.add_argument("--json", dest="json_path")
 
     return parser
+
+
+def _run_benchmark(args: argparse.Namespace) -> int:
+    try:
+        if args.benchmark_command == "run":
+            report = run_benchmark(args.root, args.manifest)
+            write_benchmark_json(report, args.json_path)
+            stats = report.get("statistics") or {}
+            print(
+                f"BENCHMARK RUN: {report['status']} name={report['name']} "
+                f"runs={stats.get('count', 0)} median={stats.get('median_seconds', 'NA')}"
+            )
+            return 0 if report["status"] in {"PASS", "PASS_WITH_WARNINGS"} else 2
+
+        if args.benchmark_command == "lock":
+            data = json.loads(Path(args.report).read_text(encoding="utf-8-sig"))
+            baseline = build_baseline(
+                data,
+                max_regression_percent=args.max_regression_percent,
+                compare_output_identity=not args.ignore_output_identity,
+                require_same_environment=args.require_same_environment,
+            )
+            write_benchmark_json(baseline, args.output)
+            print(
+                f"BENCHMARK LOCK: PASS name={baseline['benchmark_name']} "
+                f"median={baseline['baseline_median_seconds']} "
+                f"max_regression={baseline['max_regression_percent']}%"
+            )
+            return 0
+
+        data = json.loads(Path(args.report).read_text(encoding="utf-8-sig"))
+        baseline = load_baseline(args.baseline)
+        comparison = compare_to_baseline(data, baseline)
+        _write_json(comparison, args.json_path)
+        print(
+            f"BENCHMARK COMPARE: {comparison['status']} "
+            f"regression={comparison['runtime_regression_percent']}% "
+            f"blockers={comparison['blocker_count']} warnings={comparison['warning_count']}"
+        )
+        return 0 if comparison["status"] in {"PASS", "PASS_WITH_WARNINGS"} else 2
+    except (BenchmarkError, OSError, json.JSONDecodeError) as exc:
+        print(f"BENCHMARK: FAIL {exc}")
+        return 2
 
 
 def _run_coord(args: argparse.Namespace) -> int:
@@ -363,6 +442,9 @@ def main(argv: list[str] | None = None) -> int:
         pdf = report.get("pdf") or {}
         print(f"PAPER BUILD: {report['status']} pdf={pdf.get('path', 'NONE')}")
         return 0 if report["status"] == "PASS" else 2
+
+    if args.command == "benchmark":
+        return _run_benchmark(args)
 
     if args.command == "coord":
         return _run_coord(args)
