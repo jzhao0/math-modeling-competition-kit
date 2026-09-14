@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
+from mmkit.paper import audit_paper, build_paper, init_paper
 from mmkit.provenance import build_claim_lock, verify_claim_lock, write_claim_lock
 from mmkit.reproducibility import build_manifest, run_clean_room, write_manifest
 from mmkit.scaffold import init_project
@@ -73,6 +74,30 @@ def _parser() -> argparse.ArgumentParser:
     provenance_verify.add_argument("lock")
     provenance_verify.add_argument("--json", dest="json_path")
 
+    paper = sub.add_parser("paper", help="initialize, audit, or build paper sources")
+    paper_sub = paper.add_subparsers(dest="paper_command", required=True)
+
+    paper_init = paper_sub.add_parser(
+        "init", help="seed generic paper-pipeline files without overwriting user content"
+    )
+    paper_init.add_argument("root")
+    paper_init.add_argument("--force", action="store_true")
+    paper_init.add_argument("--json", dest="json_path")
+
+    paper_audit = paper_sub.add_parser(
+        "audit", help="audit a LaTeX source graph, figures, citations, and bibliography"
+    )
+    paper_audit.add_argument("root")
+    paper_audit.add_argument("main_tex")
+    paper_audit.add_argument("--json", dest="json_path")
+
+    paper_build = paper_sub.add_parser(
+        "build", help="audit then run one bounded shell-free paper build command"
+    )
+    paper_build.add_argument("root")
+    paper_build.add_argument("build_manifest")
+    paper_build.add_argument("--json", dest="json_path")
+
     return parser
 
 
@@ -121,6 +146,32 @@ def main(argv: list[str] | None = None) -> int:
             f"PROVENANCE VERIFY: {report['status']} "
             f"claims={report['claim_count']} stale={report['stale_claim_count']}"
         )
+        return 0 if report["status"] == "PASS" else 2
+
+    if args.command == "paper":
+        if args.paper_command == "init":
+            report = init_paper(args.root, force=args.force)
+            if args.json_path:
+                _write_json(report, args.json_path)
+            print(
+                f"PAPER INIT: PASS created={len(report['created_files'])} "
+                f"existing={len(report['existing_files'])} root={report['root']}"
+            )
+            return 0
+
+        if args.paper_command == "audit":
+            report = audit_paper(args.root, args.main_tex)
+            _write_json(report, args.json_path)
+            print(
+                f"PAPER AUDIT: {report['status']} blockers={report['blocker_count']} "
+                f"warnings={report['warning_count']} sources={report['source_file_count']}"
+            )
+            return 0 if report["status"] != "FAIL" else 2
+
+        report = build_paper(args.root, args.build_manifest)
+        _write_json(report, args.json_path)
+        pdf = report.get("pdf") or {}
+        print(f"PAPER BUILD: {report['status']} pdf={pdf.get('path', 'NONE')}")
         return 0 if report["status"] == "PASS" else 2
 
     report = audit_submission(
