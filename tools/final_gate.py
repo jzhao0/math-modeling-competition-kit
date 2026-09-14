@@ -1,11 +1,17 @@
-"""Final submission gate placeholder."""
+#!/usr/bin/env python3
+"""Repository-local entry point for the generic MMKit final gate."""
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
 
-def main() -> int:
-    print("FINAL_GATE: NOT_IMPLEMENTED")
-    return 0
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC = REPO_ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from mmkit.submission.gate import main  # noqa: E402
 
 
 if __name__ == "__main__":

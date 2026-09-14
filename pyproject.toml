@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "math-modeling-competition-kit"
+version = "0.1.0.dev0"
+description = "Reusable engineering infrastructure for mathematical modeling competitions"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "jzhao0"}]
+dependencies = []
+
+[project.scripts]
+mmkit = "mmkit.cli:main"
+mmkit-final-gate = "mmkit.submission.gate:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
