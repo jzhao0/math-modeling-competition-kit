@@ -11,6 +11,8 @@ import time
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from .manifest import build_manifest, hash_file
+
 DEFAULT_COPY_IGNORES = (".git", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache")
 
 
@@ -74,6 +76,8 @@ def run_clean_room(
         data = json.loads(Path(run_manifest).read_text(encoding="utf-8-sig"))
     validate_run_manifest(data)
 
+    source_manifest = build_manifest(source, include_symlinks=True)
+
     for path in source.rglob("*"):
         if path.is_symlink():
             raise ValueError(f"clean-room source contains symlink: {path.relative_to(source)}")
@@ -126,11 +130,29 @@ def run_clean_room(
             duration = round(time.monotonic() - started, 6)
 
             missing_outputs: list[str] = []
+            output_artifacts: list[dict[str, Any]] = []
             for output in command.get("expected_outputs", []):
                 rel = _safe_relative(output, field=f"{name} expected output")
                 candidate = workspace.joinpath(*rel.parts)
                 if not candidate.exists():
                     missing_outputs.append(rel.as_posix())
+                elif candidate.is_file():
+                    output_artifacts.append(
+                        {
+                            "path": rel.as_posix(),
+                            "type": "file",
+                            "size": candidate.stat().st_size,
+                            "sha256": hash_file(candidate),
+                        }
+                    )
+                elif candidate.is_dir():
+                    output_artifacts.append(
+                        {
+                            "path": rel.as_posix(),
+                            "type": "directory",
+                            "manifest": build_manifest(candidate, include_symlinks=True),
+                        }
+                    )
 
             status = "PASS" if returncode == 0 and not missing_outputs and error is None else "FAIL"
             if status == "FAIL":
@@ -144,6 +166,7 @@ def run_clean_room(
                     "returncode": returncode,
                     "duration_seconds": duration,
                     "missing_outputs": missing_outputs,
+                    "output_artifacts": output_artifacts,
                     "stdout_tail": stdout_tail,
                     "stderr_tail": stderr_tail,
                     "error": error,
@@ -158,6 +181,7 @@ def run_clean_room(
             "schema_version": 1,
             "status": overall,
             "proof_level": "MACHINE_VERIFIED",
+            "source_manifest": source_manifest,
             "commands": results,
         }
         if retain:

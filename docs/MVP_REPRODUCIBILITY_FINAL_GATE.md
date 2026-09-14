@@ -71,3 +71,15 @@ The initial gate checks:
 - ZIP CRC integrity.
 
 A `PASS` here is `MACHINE_VERIFIED` submission-engineering evidence only. It does **not** certify scientific correctness, model quality, originality, contest eligibility, or human paper quality.
+
+## Unified CLI
+
+After installation, the current MVP exposes three commands through `mmkit`:
+
+```bash
+mmkit manifest workspace --output reports/workspace_manifest.json
+mmkit reproduce workspace RUN_MANIFEST.json --json reports/reproduce.json
+mmkit audit submission --require paper.pdf --require support.zip --json reports/final_gate.json
+```
+
+The clean-room report binds the run evidence to a deterministic source manifest and hashes declared output files (or recursively manifests declared output directories).
