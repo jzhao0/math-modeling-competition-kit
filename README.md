@@ -35,6 +35,18 @@ Problem understanding
 -> Final submission gate
 -> Hash/freeze/submit
 
+## Quick start
+
+Create a generic competition workspace:
+
+```text
+mmkit init MCM-2027 --competition MCM --year 2027
+cd MCM-2027
+mmkit reproduce . config/run_manifest.json --json coordination/reproduction.json
+```
+
+See `docs/PROJECT_SCAFFOLD.md` for the generated workspace contract.
+
 ## Repository structure
 
 - `src/mmkit/` - reusable Python package
@@ -44,6 +56,15 @@ Problem understanding
 - `examples/` - public examples
 - `tests/` - automated tests
 - `docs/` - architecture, roadmap and postmortems
+
+## Implemented public core
+
+- deterministic workspace manifests;
+- bounded clean-room execution;
+- generic final-submission engineering audit;
+- claim/evidence provenance locks and stale detection;
+- cross-platform competition project scaffold;
+- Windows + Ubuntu CI on Python 3.11 and 3.13.
 
 ## Design principles
 
@@ -58,34 +79,12 @@ Problem understanding
 9. Submission artifacts are validated, hashed and frozen.
 10. Postmortems are converted into reusable tooling.
 
-## MVP commands
+## Next priorities
 
-```bash
-mmkit manifest WORKSPACE --output workspace-manifest.json
-
-mmkit reproduce WORKSPACE run-manifest.json --json reproduce-report.json
-
-mmkit audit SUBMISSION_DIR --require paper.pdf --require support.zip --json audit-report.json
-
-mmkit provenance lock WORKSPACE coordination/CLAIM_REGISTRY.csv \
-  --output coordination/CLAIM_EVIDENCE.lock.json
-
-mmkit provenance verify WORKSPACE coordination/CLAIM_REGISTRY.csv \
-  coordination/CLAIM_EVIDENCE.lock.json --json provenance-report.json
-```
-
-The provenance lock detects stale claim/evidence relationships; it does **not**
-certify scientific correctness. See `docs/PROVENANCE_MVP.md`.
-
-## Initial priorities
-
-- reproducibility and clean-room execution
-- final-submission gate
-- claim/evidence provenance
-- competition project template
-- LaTeX paper template
-- multi-agent coordination protocol
-- algorithm/runtime benchmarking
+- paper pipeline;
+- multi-agent coordination primitives;
+- algorithm/runtime benchmarking;
+- reusable modeling modules after repeated real-world need.
 
 ## License
 
