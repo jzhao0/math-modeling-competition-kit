@@ -8,6 +8,7 @@ from pathlib import Path
 
 from mmkit.provenance import build_claim_lock, verify_claim_lock, write_claim_lock
 from mmkit.reproducibility import build_manifest, run_clean_room, write_manifest
+from mmkit.scaffold import init_project
 from mmkit.submission.gate import audit_submission
 
 
@@ -24,6 +25,18 @@ def _write_json(data: dict, path: str | None) -> None:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="mmkit", description="MMKit competition-engineering CLI")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    init = sub.add_parser("init", help="create a generic competition project workspace")
+    init.add_argument("destination")
+    init.add_argument("--competition", required=True)
+    init.add_argument("--year", required=True, type=int)
+    init.add_argument("--name", dest="project_name")
+    init.add_argument(
+        "--force",
+        action="store_true",
+        help="fill missing scaffold files in a non-empty destination without overwriting existing files",
+    )
+    init.add_argument("--json", dest="json_path")
 
     manifest = sub.add_parser("manifest", help="build a deterministic SHA-256 workspace manifest")
     manifest.add_argument("root")
@@ -65,6 +78,23 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+
+    if args.command == "init":
+        report = init_project(
+            args.destination,
+            competition=args.competition,
+            year=args.year,
+            project_name=args.project_name,
+            force=args.force,
+        )
+        if args.json_path:
+            _write_json(report, args.json_path)
+        print(
+            f"INIT: PASS competition={report['competition']} year={report['year']} "
+            f"created={report['created_file_count']} existing={report['existing_file_count']} "
+            f"root={report['root']}"
+        )
+        return 0
 
     if args.command == "manifest":
         manifest = build_manifest(args.root)
