@@ -42,6 +42,7 @@ Create a generic competition workspace and initialize the paper layer:
 ```text
 mmkit init MCM-2027 --competition MCM --year 2027
 cd MCM-2027
+mmkit coord status .
 mmkit reproduce . config/run_manifest.json --json coordination/reproduction.json
 mmkit paper init .
 mmkit paper audit . paper/main.tex --json coordination/paper_audit.json
@@ -53,8 +54,9 @@ When a TeX runtime is installed and the build contract is configured:
 mmkit paper build . config/paper_build.json --json coordination/paper_build.json
 ```
 
-See `docs/PROJECT_SCAFFOLD.md` for the workspace contract and
-`docs/PAPER_PIPELINE_MVP.md` for paper auditing/build semantics.
+See `docs/PROJECT_SCAFFOLD.md` for the workspace contract,
+`docs/PAPER_PIPELINE_MVP.md` for paper auditing/build semantics, and
+`docs/AGENT_COORDINATION.md` for multi-agent checkpoint/handoff semantics.
 
 ## Repository structure
 
@@ -75,6 +77,8 @@ See `docs/PROJECT_SCAFFOLD.md` for the workspace contract and
 - cross-platform competition project scaffold;
 - deterministic LaTeX source/dependency/citation audit;
 - bounded shell-free paper build with PDF hash evidence;
+- revision-guarded multi-agent task state and role leases;
+- compact handoff, stale-lease reporting, writer/reviewer separation, and two-failure circuit breaking;
 - Windows + Ubuntu CI on Python 3.11 and 3.13.
 
 ## Design principles
@@ -92,7 +96,6 @@ See `docs/PROJECT_SCAFFOLD.md` for the workspace contract and
 
 ## Next priorities
 
-- multi-agent coordination primitives;
 - algorithm/runtime benchmarking;
 - reusable modeling modules after repeated real-world need.
 
