@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
+from mmkit.provenance import build_claim_lock, verify_claim_lock, write_claim_lock
 from mmkit.reproducibility import build_manifest, run_clean_room, write_manifest
 from mmkit.submission.gate import audit_submission
 
@@ -40,6 +41,25 @@ def _parser() -> argparse.ArgumentParser:
     audit.add_argument("--json", dest="json_path")
     audit.add_argument("--no-text-scan", action="store_true")
     audit.add_argument("--no-zip-scan", action="store_true")
+
+    provenance = sub.add_parser("provenance", help="lock or verify claim/evidence provenance")
+    provenance_sub = provenance.add_subparsers(dest="provenance_command", required=True)
+
+    provenance_lock = provenance_sub.add_parser(
+        "lock", help="bind claim rows to exact evidence file fingerprints"
+    )
+    provenance_lock.add_argument("root")
+    provenance_lock.add_argument("registry")
+    provenance_lock.add_argument("--output", required=True)
+
+    provenance_verify = provenance_sub.add_parser(
+        "verify", help="detect stale claims after registry or evidence changes"
+    )
+    provenance_verify.add_argument("root")
+    provenance_verify.add_argument("registry")
+    provenance_verify.add_argument("lock")
+    provenance_verify.add_argument("--json", dest="json_path")
+
     return parser
 
 
@@ -56,6 +76,21 @@ def main(argv: list[str] | None = None) -> int:
         report = run_clean_room(args.root, args.run_manifest, retain=args.retain)
         _write_json(report, args.json_path)
         print(f"REPRODUCE: {report['status']} commands={len(report['commands'])}")
+        return 0 if report["status"] == "PASS" else 2
+
+    if args.command == "provenance":
+        if args.provenance_command == "lock":
+            lock = build_claim_lock(args.root, args.registry)
+            write_claim_lock(lock, args.output)
+            print(f"PROVENANCE LOCK: PASS claims={lock['claim_count']} output={args.output}")
+            return 0
+
+        report = verify_claim_lock(args.root, args.registry, args.lock)
+        _write_json(report, args.json_path)
+        print(
+            f"PROVENANCE VERIFY: {report['status']} "
+            f"claims={report['claim_count']} stale={report['stale_claim_count']}"
+        )
         return 0 if report["status"] == "PASS" else 2
 
     report = audit_submission(

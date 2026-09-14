@@ -58,11 +58,30 @@ Problem understanding
 9. Submission artifacts are validated, hashed and frozen.
 10. Postmortems are converted into reusable tooling.
 
+## MVP commands
+
+```bash
+mmkit manifest WORKSPACE --output workspace-manifest.json
+
+mmkit reproduce WORKSPACE run-manifest.json --json reproduce-report.json
+
+mmkit audit SUBMISSION_DIR --require paper.pdf --require support.zip --json audit-report.json
+
+mmkit provenance lock WORKSPACE coordination/CLAIM_REGISTRY.csv \
+  --output coordination/CLAIM_EVIDENCE.lock.json
+
+mmkit provenance verify WORKSPACE coordination/CLAIM_REGISTRY.csv \
+  coordination/CLAIM_EVIDENCE.lock.json --json provenance-report.json
+```
+
+The provenance lock detects stale claim/evidence relationships; it does **not**
+certify scientific correctness. See `docs/PROVENANCE_MVP.md`.
+
 ## Initial priorities
 
-- `tools/final_gate.py`
-- clean-room reproduction
-- claim provenance
+- reproducibility and clean-room execution
+- final-submission gate
+- claim/evidence provenance
 - competition project template
 - LaTeX paper template
 - multi-agent coordination protocol
