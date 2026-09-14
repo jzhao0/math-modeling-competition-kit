@@ -1,0 +1,42 @@
+\documentclass[12pt,a4paper]{ctexart}
+
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,longtable}
+\usepackage{graphicx,xcolor}
+\usepackage{hyperref}
+\usepackage{siunitx}
+
+\title{CUMCM 2026 MMKit：Windows XeLaTeX 冒烟测试}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{中文与数学公式}
+这是一份 Windows 原生 XeLaTeX 中文编译冒烟测试。若本页中文、公式、表格和引用均正常，则基础论文构建链路可用。
+
+\begin{equation}
+  \min_{x \in \mathbb{R}^n} f(x) \quad
+  \text{s.t.}\quad Ax \le b,
+\end{equation}
+其中 $A \in \mathbb{R}^{m\times n}$，$b \in \mathbb{R}^{m}$。
+
+\section{表格}
+\begin{table}[htbp]
+  \centering
+  \caption{基础结果表}
+  \begin{tabular}{lrr}
+    \toprule
+    指标 & 基准值 & 测试值 \\
+    \midrule
+    目标函数 & 100.00 & 98.50 \\
+    误差（\%） & 0.00 & 1.50 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{交叉引用}
+公式与表格均应可正常排版。超链接包加载成功时，本 PDF 也应正常生成书签与链接元数据。
+
+\end{document}

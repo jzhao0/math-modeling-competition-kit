@@ -1,0 +1,28 @@
+[project]
+name = "cumcm-2026-mmkit"
+version = "0.1.0"
+description = "Windows-first reproducible mathematical modeling toolkit for CUMCM 2026"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "numpy",
+  "scipy",
+  "pandas",
+  "matplotlib",
+  "openpyxl",
+  "scikit-learn",
+  "statsmodels",
+  "sympy",
+  "networkx",
+  "pydantic",
+  "pyarrow",
+  "pulp",
+  "ortools",
+  "joblib",
+  "rich",
+]
+
+[tool.uv]
+package = false
+environments = [
+  "sys_platform == 'win32' and platform_machine == 'AMD64' and implementation_name == 'cpython' and python_version == '3.13'",
+]

@@ -1,0 +1,114 @@
+schema_version: 1
+status: ACTIVE
+
+principles:
+  - evidence_strength_must_be_explicit
+  - gate_approval_is_bound_to_upstream_fingerprints
+  - stale_evidence_invalidates_dependent_approval
+  - formal_writers_use_approved_evidence_not_chat_memory
+  - machine_checks_do_not_replace_human_scientific_judgment
+  - final_submission_lock_is_bound_to_exact_bytes
+
+proof_levels:
+  MACHINE_VERIFIED:
+    meaning: deterministic verifier executed against identified inputs
+    requires:
+      - verifier_identity
+      - input_fingerprints
+      - output_or_report
+  HUMAN_CONFIRMED:
+    meaning: participant explicitly reviewed and approved an identified artifact or decision
+    requires:
+      - artifact_or_decision_identity
+      - confirmation_record
+  SNAPSHOT_ONLY:
+    meaning: existence or fingerprint was checked, but semantic correctness was not established
+    requires:
+      - fingerprint
+  UNVERIFIED:
+    meaning: sufficient verification evidence is not yet available
+
+reporting:
+  generic_pass_without_proof_level: forbidden
+  agent_self_report_is_proof: false
+  scientific_truth_from_agent_summary: forbidden
+  preferred_fields:
+    - status
+    - proof_level
+    - evidence
+
+formal_writer_contract:
+  allowed_fact_sources:
+    - approved_result_tables
+    - claim_evidence_register
+    - verified_citations
+    - approved_assumptions_and_definitions
+    - selected_figures_with_source_data
+    - deterministic_program_outputs_bound_to_fingerprints
+  forbidden_fact_sources:
+    - chat_memory_alone
+    - agent_self_report_alone
+    - rejected_candidate_outputs
+    - stale_results
+    - unexecuted_code
+  on_conflict: stop_and_escalate
+
+gate_invalidation:
+  rule: any_material_upstream_fingerprint_change_marks_dependent_gate_STALE
+  stale_gate_may_be_reused: false
+  exact_byte_change_after_final_lock_requires_reapproval: true
+
+checkpoint_rollback:
+  preserve_verified_upstream: true
+  invalidate_only_dependent_downstream: true
+  restart_entire_project_by_default: false
+
+process_ledger:
+  track_for_formal_artifacts:
+    - edit_origin
+    - timestamp
+    - resulting_fingerprint
+    - verifier_to_rerun
+    - dependent_gate_status
+  edit_origins:
+    - deterministic_script
+    - bounded_agent_edit
+    - human_edit
+    - external_tool
+
+integrity_forensics:
+  run_before_final_lock: true
+  checks:
+    - claim_table_figure_appendix_consistency
+    - claimed_artifact_exists
+    - citation_identity_and_scope
+    - internal_workflow_state_leakage
+    - fabricated_verification_language
+    - support_package_path_and_dependency_consistency
+
+final_exact_file_lock:
+  requires:
+    - final_human_read
+    - clean_room_support_archive_test
+    - metadata_and_anonymity_audit_when_required
+    - secret_scan
+    - exact_hashes_after_all_edits
+    - support_manifest_matches_archive
+    - explicit_final_approval
+  checksum_algorithms:
+    - sha256
+    - md5
+  after_lock_writes: forbidden
+
+clean_room_support_policy:
+  extraction_root_must_be_outside_project_tree: true
+  no_absolute_local_paths: true
+  no_fallback_to_original_workspace: true
+  required_documentation:
+    - package_map
+    - required_software
+    - dependencies
+    - input_handling
+    - run_order
+    - exact_commands
+  claimed_complete_runnable_program_requires_execution_evidence: true

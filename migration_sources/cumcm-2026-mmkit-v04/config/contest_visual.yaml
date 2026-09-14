@@ -1,0 +1,94 @@
+# MMKit competition visual policy (v0.3)
+# CUMCM-specific: visual impact is a scored communication advantage, not merely decoration.
+
+version: "0.3.0"
+updated: "2026-09-04"
+
+objective:
+  scientific_truth: hard_constraint
+  readability: hard_constraint
+  competition_visual_impact: optimize
+  journal_minimalism: not_required
+
+figure_intents:
+  EVIDENCE:
+    purpose: "让评委准确读取关键结果、比较和不确定性"
+    beauty_budget: moderate_to_high
+    exact_values_visible_when_needed: true
+  STRUCTURAL:
+    purpose: "解释模型结构、状态、信息流、返工或装配关系"
+    beauty_budget: high
+    editable_source_required: true
+  SHOWCASE:
+    purpose: "提高版面层次、记忆点和竞赛展示感，同时承载已验证结果或模型结构"
+    beauty_budget: high
+    decorative_depth_allowed: true
+    must_remain_traceable_to_verified_content: true
+
+three_dimensional_design:
+  default_attitude: encouraged_when_visually_better
+  modes:
+    DATA_3D:
+      use_when: "第三维是实际参数、响应、时间、状态或类别层"
+      examples: [surface, mesh, contour_projection, 3d_scatter, stacked_spatial_series]
+    PRESENTATION_3D:
+      use_when: "二维/分类数据做立体展示能明显改善竞赛观感"
+      examples: [3d_columns, beveled_bars, extruded_ribbon_line, perspective_cards]
+      decorative_axis_has_numeric_ticks: false
+      direct_value_labels_recommended: true
+      nearby_table_or_2d_readout_when_values_close: true
+  hard_limits:
+    - do_not_invent_values
+    - do_not_change_rank_or_apparent_direction
+    - do_not_hide_critical_error_bars_or_intervals
+    - do_not_label_visual_depth_as_measured_variable
+    - do_not_interpolate_uncomputed_surface_values_without_disclosure
+
+plot_preferences:
+  categorical_comparison:
+    preferred_showcase: [3d_columns, polished_grouped_columns]
+    exact_reading: direct_labels
+  one_dimensional_trend:
+    preferred_showcase: [extruded_ribbon_line, layered_line, gradient_area_with_line]
+    rule: "视觉深度可以是装饰性的，但横纵量轴仍保持真实。"
+  two_parameter_response:
+    preferred_showcase: [surface_plus_contour, mesh_plus_projection, heatmap_plus_surface]
+  sensitivity_or_robustness:
+    preferred_showcase: [surface, contour, heatmap, ridge_or_layered_curves]
+  composition_or_cost_breakdown:
+    preferred_showcase: [3d_columns, waterfall, radial_or_ring_when_labels_remain_clear]
+  process_or_state:
+    preferred_showcase: [layered_state_map, isometric_process_diagram, polished_flow_diagram]
+
+page_rhythm:
+  target: "避免连续大段纯文字造成阅读疲劳；公式、图、表和解释交替形成节奏。"
+  visual_anchor_every_modeling_pages: "about 1.0-1.5"
+  figure_near_first_use: true
+  avoid_full_page_figure_without_explanatory_reason: true
+  avoid_figures_batched_only_at_end: true
+
+backends:
+  Python:
+    role: deterministic_default
+  R:
+    role: statistical_and_grammar_of_graphics
+  Origin:
+    role: preferred_optional_showcase_backend
+    strengths: [3d_columns, surfaces, contours, fitting_visuals, publication_layout]
+    requires_verified_frozen_data: true
+    fallback: [Python, R]
+  Drawio_or_SVG:
+    role: editable_structural_diagrams
+
+qa:
+  - "数字、排序、区间和单位与冻结结果一致"
+  - "100% PDF 缩放和 A4 打印可读"
+  - "展示型 3D 的深度不伪装成数据维度"
+  - "透视不造成错误排序或明显视觉偏差"
+  - "图例、数值标签、标题和正文引用一致"
+  - "图在版面上真正改善观感，而非机械套特效"
+  - "评委视角人工检查最终 PDF"
+
+note: >
+  本策略明确允许“为了好看而好看”的展示层，尤其是三维柱状图、空间曲面和立体构图；
+  约束只针对科学含义和读数真实性。MMKit 不把期刊式极简主义当作数学建模竞赛的默认审美。

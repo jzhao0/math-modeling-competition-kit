@@ -1,0 +1,131 @@
+# MMKit Method Router (v0.2 P1)
+# R 是专业统计/计量后端；Python 为默认总控。每个路由含 use_when / avoid_when /
+# expected_outputs / crosscheck_strategy。
+
+data_cleaning:
+  primary: Python
+  use_when: ["任务涉及数据读取/清洗/工程管线"]
+  avoid_when: ["无明确清洗需求时不要过度工程化"]
+  expected_outputs: ["清洗后 CSV/Parquet", "数据审计摘要（缺失/异常/单位）"]
+  crosscheck_strategy: "保留原始数据只读；清洗脚本可重跑，输出目录独立"
+
+descriptive_statistics:
+  primary: Python
+  alternative: R
+  use_when: ["基础描述统计、分组统计、分布审计"]
+  avoid_when: ["不需要 R 特有估计量时"]
+  expected_outputs: ["stats.csv / distribution summary"]
+  crosscheck_strategy: "Python 与 R 对同一输入分别计算并比对（1e-8 容差）"
+
+linear_regression:
+  primary: Python
+  alternative: R
+  use_when: ["普通 OLS/稳健标准误"]
+  avoid_when: ["面板/固定效应需求时应直接走 panel 路由"]
+  expected_outputs: ["coefficients.csv metrics.csv predictions.csv run_metadata.json"]
+  crosscheck_strategy: "numpy/statsmodels 与 R lm() 系数/预测一致性（1e-10）"
+
+panel_fixed_effects:
+  primary: R/fixest
+  crosscheck: Python-if-practical
+  use_when: ["多维固定效应、聚类标准误、高维面板"]
+  avoid_when: ["单一体积小、无 FE 需求"]
+  expected_outputs: ["感估计结果 CSV + run_metadata + 模型摘要"]
+  crosscheck_strategy: "Python linearmodels/手动 FE（若可行）与 fixest 比对；否则记录不可交叉场景"
+
+panel_random_effects:
+  primary: R/plm
+  use_when: ["经典面板 RE/FD/GMM"]
+  avoid_when: ["FE 更合适时避免 RE"]
+  expected_outputs: ["系数表 + Hausman/推断摘要 + metadata"]
+  crosscheck_strategy: "与 fixest/FE 结果对照+检验一致性"
+
+difference_in_differences:
+  primary: R/did
+  use_when: ["DiD、staggered adoption、事件研究"]
+  avoid_when: ["单组前后比较无处理组时"]
+  expected_outputs: ["ATT 估计 + 事件研究图数据 + metadata"]
+  crosscheck_strategy: "手动 DiD 回归/event-study 平行趋势双重验证"
+
+matching:
+  primary: R/MatchIt
+  use_when: ["倾向得分匹配、预处理平衡"]
+  avoid_when: ["无处理/对照结构或样本过小"]
+  expected_outputs: ["匹配后数据 + balance 统计 + metadata"]
+  crosscheck_strategy: "与未匹配估计对照并报告平衡改善"
+
+quantile_regression:
+  primary: R/quantreg
+  use_when: ["分位数回归、条件分布刻画"]
+  avoid_when: ["只需均值时"]
+  expected_outputs: ["分位系数表 + 回退诊断 + metadata"]
+  crosscheck_strategy: "与均值回归对照解释分位差异"
+
+survival_analysis:
+  primary: R/survival
+  use_when: ["生存分析、Cox、风险模型"]
+  avoid_when: ["无删失事件结构"]
+  expected_outputs: ["风险比/生存曲线数据 + metadata"]
+  crosscheck_strategy: "Python lifelines（若可用）或 log-rank 检验交叉"
+
+time_series_classical:
+  primary: Python_or_R
+  R: forecast
+  use_when: ["经典 ARIMA/ETS、季节性时间序列"]
+  avoid_when: ["深度学习时序且样本充足时用 Python"]
+  expected_outputs: ["预测值+区间+残差诊断+metadata"]
+  crosscheck_strategy: "Python statsmodels 与 R forecast 结果比对"
+
+optimization:
+  primary: Python
+  use_when: ["数值优化、约束/无约束"]
+  avoid_when: ["需要符号形式时走 symbolic"]
+  expected_outputs: ["最优解+目标值+可行性/收敛信息"]
+  crosscheck_strategy: "scipy/pulp/ortools 多求解器或解析解交叉"
+
+operations_research:
+  primary: Python
+  use_when: ["整数规划、LP/CP、调度、网络流"]
+  avoid_when: ["小规模手工可解时避免过度建模"]
+  expected_outputs: ["模型文件 + 求解结果 + 对偶/敏感性（适用时）"]
+  crosscheck_strategy: "pulp/ortools 双实现或松弛界验证"
+
+machine_learning:
+  primary: Python
+  use_when: ["分类/回归/聚类等有监督无监督"]
+  avoid_when: ["小样本且可解释模型足够时"]
+  expected_outputs: ["指标表（CV 结果）、特征重要性、模型文件"]
+  crosscheck_strategy: "严格 CV + baseline 对比 + 消融"
+
+deep_learning:
+  primary: Python
+  use_when: ["高维图像/序列/大样本非线性格局"]
+  avoid_when: ["数据不足/应可解释方法时"]
+  expected_outputs: ["训练日志、指标、checkpoint、推理脚本"]
+  crosscheck_strategy: "固定 seed；与 ML baseline 对比增益"
+
+network_graph:
+  primary: Python
+  use_when: ["图/网络分析、路径、中心性、社区"]
+  avoid_when: ["非图结构数据"]
+  expected_outputs: ["图统计 + 算法结果 + 可视化脚本"]
+  crosscheck_strategy: "networkx 与自实现/第二库对照"
+
+numerical_simulation:
+  primary: Python
+  use_when: ["Monte Carlo、随机仿真、数值积分"]
+  avoid_when: ["解析可解时"]
+  expected_outputs: ["仿真结果 CSV + 随机种子 + 收敛/置信区间"]
+  crosscheck_strategy: "解析解/热力学等式或独立实现交叉"
+
+symbolic_math:
+  primary: Mathematica_or_SymPy
+  use_when: ["符号推导、公式验证、极限/级数"]
+  avoid_when: ["纯数值任务"]
+  expected_outputs: ["推导记录 + 结论公式"]
+  crosscheck_strategy: "sympy 与 Mathematica 对同一表达式交叉"
+
+general_guardrails:
+  - "任何 R 路由输出必须符合 r_toolbox/OUTPUT_CONTRACT.md"
+  - "SPECIALIZED 包仅在真实任务需要时安装（见 r_toolbox/README.md）"
+  - "每个 crosscheck 结果必须落盘并登记到 CLAIM_EVIDENCE"

@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "description": "Freeze only human-approved final decision numbers here. Empty until a drill or contest problem has approved facts.",
+  "facts": []
+}
