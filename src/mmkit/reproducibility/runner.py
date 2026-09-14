@@ -91,6 +91,7 @@ def run_clean_room(
         symlinks=False,
     )
 
+    workspace_resolved = workspace.resolve()
     results: list[dict[str, Any]] = []
     overall = "PASS"
 
@@ -98,8 +99,8 @@ def run_clean_room(
         for index, command in enumerate(data["commands"]):
             name = str(command.get("name") or f"command_{index + 1}")
             cwd_rel = _safe_relative(str(command.get("cwd", ".")), field=f"{name} cwd")
-            cwd = workspace.joinpath(*cwd_rel.parts).resolve()
-            if workspace not in (cwd, *cwd.parents):
+            cwd = workspace_resolved.joinpath(*cwd_rel.parts).resolve()
+            if not cwd.is_relative_to(workspace_resolved):
                 raise ValueError(f"command cwd escaped workspace: {cwd_rel}")
             if not cwd.is_dir():
                 raise ValueError(f"command cwd does not exist: {cwd_rel}")
@@ -133,7 +134,7 @@ def run_clean_room(
             output_artifacts: list[dict[str, Any]] = []
             for output in command.get("expected_outputs", []):
                 rel = _safe_relative(output, field=f"{name} expected output")
-                candidate = workspace.joinpath(*rel.parts)
+                candidate = workspace_resolved.joinpath(*rel.parts)
                 if not candidate.exists():
                     missing_outputs.append(rel.as_posix())
                 elif candidate.is_file():
