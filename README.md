@@ -44,8 +44,19 @@ mmkit init MCM-2027 --competition MCM --year 2027
 cd MCM-2027
 mmkit coord status .
 mmkit reproduce . config/run_manifest.json --json coordination/reproduction.json
+mmkit benchmark run . config/benchmark.json --json coordination/benchmark.json
 mmkit paper init .
 mmkit paper audit . paper/main.tex --json coordination/paper_audit.json
+```
+
+After a correct implementation is selected, lock an explicit runtime/output baseline before optimizing it:
+
+```text
+mmkit benchmark lock coordination/benchmark.json \
+  --output coordination/benchmark.baseline.json \
+  --max-regression-percent 15
+mmkit benchmark compare coordination/benchmark.json coordination/benchmark.baseline.json \
+  --json coordination/benchmark.compare.json
 ```
 
 When a TeX runtime is installed and the build contract is configured:
@@ -55,8 +66,9 @@ mmkit paper build . config/paper_build.json --json coordination/paper_build.json
 ```
 
 See `docs/PROJECT_SCAFFOLD.md` for the workspace contract,
-`docs/PAPER_PIPELINE_MVP.md` for paper auditing/build semantics, and
-`docs/AGENT_COORDINATION.md` for multi-agent checkpoint/handoff semantics.
+`docs/PAPER_PIPELINE_MVP.md` for paper auditing/build semantics,
+`docs/AGENT_COORDINATION.md` for multi-agent checkpoint/handoff semantics, and
+`docs/ALGORITHM_RUNTIME_BENCHMARKING.md` for post-model-freeze performance measurement.
 
 ## Repository structure
 
@@ -79,6 +91,8 @@ See `docs/PROJECT_SCAFFOLD.md` for the workspace contract,
 - bounded shell-free paper build with PDF hash evidence;
 - revision-guarded multi-agent task state and role leases;
 - compact handoff, stale-lease reporting, writer/reviewer separation, and two-failure circuit breaking;
+- post-model-freeze warmup/repeated-run runtime benchmarking;
+- explicit runtime regression thresholds, environment drift reporting, and output-identity locks;
 - Windows + Ubuntu CI on Python 3.11 and 3.13.
 
 ## Design principles
@@ -96,8 +110,7 @@ See `docs/PROJECT_SCAFFOLD.md` for the workspace contract,
 
 ## Next priorities
 
-- algorithm/runtime benchmarking;
-- reusable modeling modules after repeated real-world need.
+- reusable modeling modules only after repeated real-world need is proven.
 
 ## License
 
