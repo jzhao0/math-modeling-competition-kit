@@ -17,8 +17,10 @@ This checklist separates repository readiness from irreversible publication acti
 - [x] CI reruns the full test suite against the installed package.
 - [x] Tag-triggered release-build workflow can produce auditable distribution artifacts without automatically publishing them.
 - [x] v0.1 publication scope explicitly excludes active future-competition training and private material.
-- [ ] Release-candidate PR has a final successful GitHub Actions run after all hardening changes.
-- [ ] Human approves merging the release-candidate PR.
+- [x] PR #9 release-candidate CI run `34956898207` completed successfully before merge.
+- [x] Human approved and PR #9 was merged to `main`.
+- [ ] Follow-up release-hardening PR has a final successful GitHub Actions run after archive-path and tag/version validation fixes.
+- [ ] Human approves merging the follow-up release-hardening PR.
 
 ## External publication gate
 
@@ -38,7 +40,7 @@ The items below are intentionally **not** performed automatically by repository 
 
 Do not create a public tag, GitHub Release, or PyPI upload when any of the following is true:
 
-- release PR CI is not green;
+- release hardening CI is not green;
 - the package contains `migration_sources/`, private controller content, secrets, or embargoed future-competition material;
 - version metadata does not match the intended tag;
 - publication credentials/account ownership are ambiguous;
