@@ -26,8 +26,12 @@ def _members(path: Path) -> list[str]:
     raise ValueError(f"unsupported distribution archive: {path}")
 
 
+def _normalized_parts(value: str) -> tuple[str, ...]:
+    return PurePosixPath(value.replace("\\", "/")).parts
+
+
 def _contains_forbidden_component(name: str) -> str | None:
-    parts = PurePosixPath(name.replace("\\", "/")).parts
+    parts = _normalized_parts(name)
     for part in parts:
         if part in FORBIDDEN_COMPONENTS:
             return part
@@ -35,8 +39,24 @@ def _contains_forbidden_component(name: str) -> str | None:
 
 
 def _has_suffix_member(members: Iterable[str], suffix: str) -> bool:
-    normalized = suffix.replace("\\", "/")
-    return any(name.replace("\\", "/").endswith(normalized) for name in members)
+    """Match a required archive member by whole path components.
+
+    Source distributions normally prepend one generated root directory, so an
+    exact string equality check is too strict. Raw ``str.endswith`` is too
+    permissive because names such as ``not-pyproject.toml`` can impersonate a
+    required member. Comparing complete trailing path components permits the
+    sdist root prefix while rejecting near-match filenames and directories.
+    """
+
+    suffix_parts = _normalized_parts(suffix)
+    if not suffix_parts:
+        return False
+
+    for name in members:
+        member_parts = _normalized_parts(name)
+        if len(member_parts) >= len(suffix_parts) and member_parts[-len(suffix_parts) :] == suffix_parts:
+            return True
+    return False
 
 
 def audit_archive(path: Path) -> dict:
