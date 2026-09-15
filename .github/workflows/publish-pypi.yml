@@ -1,0 +1,64 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Exact approved release tag to publish"
+        required: true
+        default: "v0.1.0a1"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: publish approved tag
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout exact release tag
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Validate tag against package version
+        run: python tools/check_release_tag.py "${{ inputs.tag }}"
+
+      - name: Install build frontend
+        run: python -m pip install build
+
+      - name: Build wheel and source distribution
+        run: python -m build
+
+      - name: Audit distribution contents
+        run: python tools/audit_distribution.py dist --json dist/audit.json
+
+      - name: Install exact built wheel without index access
+        run: python -m pip install --force-reinstall --no-deps --no-index --find-links dist math-modeling-competition-kit
+
+      - name: Smoke installed package
+        run: |
+          mmkit --help
+          mmkit-final-gate --help
+          python -c "import mmkit; print(mmkit.__version__)"
+          python -m pip check
+
+      - name: Publish exact audited distributions to PyPI via OIDC
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+# This workflow intentionally requires a manual workflow dispatch and the
+# `pypi` GitHub environment. Configure PyPI Trusted Publishing to trust exactly:
+# owner=jzhao0, repository=math-modeling-competition-kit,
+# workflow=publish-pypi.yml, environment=pypi.
+# No long-lived PyPI API token is required or expected.
