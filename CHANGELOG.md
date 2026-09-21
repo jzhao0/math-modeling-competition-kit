@@ -2,7 +2,7 @@
 
 All notable public changes to Math Modeling Competition Kit are documented here.
 
-## [0.1.0a2] - Unreleased
+## [0.1.0a2] - 2026-09-21
 
 Public-repository hygiene and release-metadata follow-up.
 
