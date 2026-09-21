@@ -23,9 +23,9 @@ The `v0.1.0a1` tag is immutable historical release evidence.
 - [x] Expand `.gitignore` coverage for common local credential files.
 - [x] Add public security guidance.
 - [x] Bump package/version metadata to `0.1.0a2`.
-- [ ] Hygiene PR CI is green.
-- [ ] Human approves and merges the hygiene PR.
-- [ ] Create `v0.1.0a2` from the exact approved merge commit.
+- [x] Hygiene PR CI is green.
+- [x] Human approved and merged the hygiene PR.
+- [ ] Create `v0.1.0a2` from the exact approved release commit.
 - [ ] Tag-triggered `Release build` succeeds.
 - [ ] Publish to PyPI through the existing Trusted Publisher/OIDC path.
 - [ ] Fresh-install `0.1.0a2` from official PyPI and run CLI smoke checks.
