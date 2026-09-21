@@ -1,6 +1,6 @@
 # MVP: reproducibility and final submission gate
 
-This is the first public-product slice after the private-to-public migration archive was closed.
+This is the first public-product slice of MMKit.
 
 ## Scope
 
@@ -12,7 +12,7 @@ The MVP deliberately starts with engineering guarantees rather than a large mode
 - standard-library-only runtime code;
 - deterministic tests.
 
-`migration_sources/` remains historical read-only evidence. Product code must not import from it.
+Product code is self-contained under `src/mmkit/` and must not depend on private workspaces or historical snapshots.
 
 ## Reproducibility manifest
 
