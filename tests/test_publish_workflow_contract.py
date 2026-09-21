@@ -31,6 +31,10 @@ class PublishWorkflowContractTests(unittest.TestCase):
         publish = self.workflow.index("pypa/gh-action-pypi-publish@release/v1")
         self.assertLess(audit, publish)
 
+    def test_audit_report_stays_outside_dist_directory(self) -> None:
+        self.assertIn("python tools/audit_distribution.py dist --json audit.json", self.workflow)
+        self.assertNotIn("--json dist/", self.workflow)
+
 
 if __name__ == "__main__":
     unittest.main()
