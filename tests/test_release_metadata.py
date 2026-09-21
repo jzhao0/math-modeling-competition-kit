@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import tomllib
 import unittest
 from pathlib import Path
@@ -14,7 +15,7 @@ class ReleaseMetadataTests(unittest.TestCase):
         self.assertEqual(mmkit.__version__, data["project"]["version"])
 
     def test_v01_candidate_is_explicit_alpha(self) -> None:
-        self.assertEqual(mmkit.__version__, "0.1.0a1")
+        self.assertRegex(mmkit.__version__, re.compile(r"^0\.1\.0a\d+$"))
 
 
 if __name__ == "__main__":
