@@ -1,12 +1,16 @@
 # Math Modeling Competition Kit
 
+[![PyPI](https://img.shields.io/pypi/v/math-modeling-competition-kit?label=PyPI)](https://pypi.org/project/math-modeling-competition-kit/)
+[![Python](https://img.shields.io/pypi/pyversions/math-modeling-competition-kit)](https://pypi.org/project/math-modeling-competition-kit/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A reusable engineering toolkit for mathematical modeling competitions.
 
 ## Release status
 
-The current public line is preparing **`v0.1.0a1`**. This release is intentionally an **engineering core**, not an algorithm encyclopedia.
+The first public alpha, **`v0.1.0a1`**, is now available on PyPI.
 
-The `v0.1.x` public scope is distilled from the completed CUMCM 2026 development cycle and subsequent generic hardening of those engineering capabilities. It does **not** publish private contest artifacts, active future-competition training, or competition-specific tactics.
+This release is intentionally an **engineering core**, not an algorithm encyclopedia. The `v0.1.x` public scope is distilled from the completed CUMCM 2026 development cycle and subsequent generic hardening of those engineering capabilities. It does **not** publish private contest artifacts, active future-competition training, or competition-specific tactics.
 
 > Core principle: **Choose and validate the model early. Once the model is correct, optimize the algorithm and engineering implementation instead of endlessly replacing the model.**
 
@@ -29,22 +33,30 @@ Reusable modeling modules such as rolling-horizon engines, scenario reduction, o
 
 ## Installation
 
+Install the current public alpha from PyPI:
+
+```text
+python -m pip install --pre math-modeling-competition-kit==0.1.0a1
+```
+
+For the newest available release line:
+
+```text
+python -m pip install --pre math-modeling-competition-kit
+```
+
 From a source checkout:
 
 ```text
 python -m pip install .
 ```
 
-After the first PyPI release is explicitly approved and published:
-
-```text
-python -m pip install math-modeling-competition-kit
-```
-
-The command-line entry point is:
+Verify the installation:
 
 ```text
 mmkit --help
+mmkit-final-gate --help
+python -c "import mmkit; print(mmkit.__version__)"
 ```
 
 ## Workflow
@@ -107,7 +119,8 @@ See:
 - `docs/AGENT_COORDINATION.md` — multi-agent checkpoint/handoff semantics;
 - `docs/ALGORITHM_RUNTIME_BENCHMARKING.md` — post-model-freeze performance measurement;
 - `docs/RELEASE_SCOPE_V0.1.md` — exact first-release publication boundary;
-- `docs/RELEASE_CHECKLIST_V0.1.md` — release gate and remaining external actions.
+- `docs/RELEASE_CHECKLIST_V0.1.md` — release gate and external publication steps;
+- `docs/RELEASE_NOTES_V0.1.0A1.md` — first public alpha release notes.
 
 ## Repository structure
 
