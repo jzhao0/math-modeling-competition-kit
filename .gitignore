@@ -49,11 +49,21 @@ dist/
 *.synctex.gz
 *.toc
 
+# Local secrets / credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.kdbx
+secrets/
+credentials/
+
 # Competition private/local data
 data/private/
 inputs/private/
-secrets/
-credentials/
 
 # Submission artifacts
 final_upload/
