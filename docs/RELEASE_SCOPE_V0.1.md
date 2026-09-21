@@ -1,13 +1,13 @@
 # v0.1 public release scope
 
-Status: ALPHA CANDIDATE  
-Target: `v0.1.0a1`
+Status: ALPHA  
+Current candidate: `v0.1.0a2`
 
-## Source lineage
+## Public boundary
 
-The `v0.1.x` public line is limited to generic engineering capabilities distilled from the completed CUMCM 2026 development cycle and the public hardening work that followed it.
+The `v0.1.x` line contains reusable engineering capabilities and the release/security infrastructure needed to ship them as a standalone public package.
 
-This release line is intentionally **not** a publication of the original competition solution, private competition artifacts, private prompts, teacher-specific material, local provider configuration, or historical internal state.
+It is intentionally **not** a publication of competition answers, private competition artifacts, raw interaction histories, private prompts, teacher-specific material, local provider configuration, personal paths, or historical private-workbench snapshots.
 
 ## Included public capabilities
 
@@ -18,23 +18,21 @@ This release line is intentionally **not** a publication of the original competi
 - paper source/dependency/citation audit and bounded build contract;
 - context-resilient agent coordination primitives;
 - post-model-freeze runtime/output benchmarking;
-- CI, packaging, release metadata, and distribution safety checks needed to ship those capabilities.
+- CI, packaging, release metadata, and distribution safety checks.
 
-## Explicitly excluded from v0.1
+## Explicitly excluded
 
-- active or future MCM/ICM training material;
-- competition-specific modeling ideas, tactics, prompts, examples, adapters, experiments, or failure records from an unfinished future competition cycle;
-- newly discovered reusable techniques that have not passed post-competition distillation;
-- private controller state;
+- active or future competition training material;
+- competition-specific modeling ideas, tactics, prompts, examples, adapters, experiments, or failure records from unfinished future work;
+- newly discovered reusable techniques that have not passed a separate publication review;
+- private controller state and provider-local configuration;
 - frozen competition answer artifacts;
-- deferred-license/provenance third-party templates or vendor assets;
-- placeholder modeling namespaces as a promise of implemented modeling APIs.
+- raw chats or interaction logs;
+- deferred-license/provenance third-party templates or vendor assets.
 
-## Embargo rule for future competitions
+## Future publication gate
 
-Future competition work is private by default. During training and competition, public maintenance may continue only for already-released capabilities, packaging, CI, documentation, bug fixes, and security/reliability work that does not expose embargoed competition material.
-
-After the relevant future competition ends, candidate material may be considered through a new publication gate:
+Future private work remains private by default. Candidate material may be considered later through:
 
 ```text
 private evidence

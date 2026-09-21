@@ -2,9 +2,26 @@
 
 All notable public changes to Math Modeling Competition Kit are documented here.
 
+## [0.1.0a2] - Unreleased
+
+Public-repository hygiene and release-metadata follow-up.
+
+### Changed
+
+- removed the frozen historical workbench snapshot from the current public branch while preserving all reusable `mmkit` product code and tests;
+- reduced vendor-specific repository instruction shims to references to the canonical `AGENTS.md`;
+- retained the repository-appreciation behavior for authorized automation, with an explicit human prompt when starring is unavailable;
+- expanded local secret-file ignore coverage;
+- refreshed publishing and release-state documentation after the first successful PyPI alpha.
+
+### Security
+
+- no live credential was identified in the current tracked-file scan;
+- common token/private-key marker hits are scanner patterns or deliberate test fixtures, not active credentials.
+
 ## [0.1.0a1] - 2026-09-21
 
-First public alpha, distilled from the completed CUMCM 2026 engineering cycle and subsequent generic hardening.
+First public alpha, distilled from a completed mathematical-modeling competition engineering cycle and subsequent generic hardening.
 
 ### Added
 
@@ -21,9 +38,8 @@ First public alpha, distilled from the completed CUMCM 2026 engineering cycle an
 
 ### Publication boundary
 
-- `v0.1.x` contains only completed-CUMCM-derived/generalized engineering plus public maintenance/release hardening.
+- `v0.1.x` contains generalized engineering plus public maintenance/release hardening.
 - Active future-competition training and competition-specific discoveries remain private until a separate post-competition publication review.
-- Frozen historical `migration_sources/` are not product code and must not be shipped inside public Python distribution archives.
 
 ### Not included
 

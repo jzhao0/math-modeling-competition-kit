@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "math-modeling-competition-kit"
-version = "0.1.0a1"
+version = "0.1.0a2"
 description = "Reusable engineering infrastructure for mathematical modeling competitions"
 readme = "README.md"
 requires-python = ">=3.11"
