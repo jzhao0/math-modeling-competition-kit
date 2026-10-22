@@ -1,5 +1,11 @@
 # Repository agent instructions
 
+## Proportionate implementation
+
+- For reversible text/layout/visual changes, change the relevant file and inspect the output. No new test fixture, runner, probe, compliance checklist, or packaging matrix for a cosmetic change.
+- For code and publication changes, select the nearest existing contract check and expand only for actual changed risk. Keep public/private competition boundaries, reproducibility, provenance and release safety intact.
+
+
 These instructions apply to automated coding and research agents that operate on this repository.
 
 ## Start here
