@@ -58,6 +58,13 @@ class RunnerTests(unittest.TestCase):
             root.mkdir()
             outside = Path(tmp) / "outside.txt"
             outside.write_text("private", encoding="utf-8")
+            probe = Path(tmp) / "probe-link"
+            try:
+                probe.symlink_to(outside)
+            except (OSError, NotImplementedError):
+                self.skipTest("symlinks are not available on this host")
+            else:
+                probe.unlink()
             script = root / "make_link.py"
             script.write_text(
                 "from pathlib import Path\n"
