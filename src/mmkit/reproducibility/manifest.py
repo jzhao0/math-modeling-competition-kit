@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
 
@@ -43,32 +44,33 @@ def build_manifest(
     records: list[dict[str, Any]] = []
     total_bytes = 0
 
-    for path in sorted(root_path.rglob("*"), key=lambda p: _normalise_relative(p, root_path)):
-        rel_parts = path.relative_to(root_path).parts
-        if any(part in ignored for part in rel_parts[:-1]):
-            continue
-        if path.is_dir():
-            continue
+    # Prune ignored trees before descending; rglob would still traverse and
+    # sort every file under .git and cache directories before discarding them.
+    for current_dir, subdirs, filenames in os.walk(root_path, followlinks=False):
+        subdirs[:] = [name for name in subdirs if name not in ignored]
+        for filename in filenames:
+            path = Path(current_dir) / filename
+            rel = _normalise_relative(path, root_path)
+            if path.is_symlink():
+                if include_symlinks:
+                    records.append({"path": rel, "type": "symlink", "target": path.readlink().as_posix()})
+                continue
 
-        rel = _normalise_relative(path, root_path)
-        if path.is_symlink():
-            if include_symlinks:
-                records.append({"path": rel, "type": "symlink", "target": path.readlink().as_posix()})
-            continue
+            if not path.is_file():
+                continue
 
-        if not path.is_file():
-            continue
+            size = path.stat().st_size
+            total_bytes += size
+            records.append(
+                {
+                    "path": rel,
+                    "type": "file",
+                    "size": size,
+                    "sha256": hash_file(path),
+                }
+            )
 
-        size = path.stat().st_size
-        total_bytes += size
-        records.append(
-            {
-                "path": rel,
-                "type": "file",
-                "size": size,
-                "sha256": hash_file(path),
-            }
-        )
+    records.sort(key=lambda item: item["path"])
 
     return {
         "schema_version": 1,
