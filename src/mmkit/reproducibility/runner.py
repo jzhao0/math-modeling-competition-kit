@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -78,9 +79,14 @@ def run_clean_room(
 
     source_manifest = build_manifest(source, include_symlinks=True)
 
-    for path in source.rglob("*"):
-        if path.is_symlink():
-            raise ValueError(f"clean-room source contains symlink: {path.relative_to(source)}")
+    # Match copytree's ignore set; scanning .git/caches adds work but those
+    # trees are not part of the clean room.
+    for current_dir, subdirs, filenames in os.walk(source, followlinks=False):
+        subdirs[:] = [name for name in subdirs if name not in DEFAULT_COPY_IGNORES]
+        for name in (*subdirs, *filenames):
+            path = Path(current_dir) / name
+            if path.is_symlink():
+                raise ValueError(f"clean-room source contains symlink: {path.relative_to(source)}")
 
     temp_parent = Path(tempfile.mkdtemp(prefix="mmkit-cleanroom-"))
     workspace = temp_parent / "workspace"
