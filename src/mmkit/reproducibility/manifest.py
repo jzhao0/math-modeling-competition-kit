@@ -47,7 +47,21 @@ def build_manifest(
     # Prune ignored trees before descending; rglob would still traverse and
     # sort every file under .git and cache directories before discarding them.
     for current_dir, subdirs, filenames in os.walk(root_path, followlinks=False):
-        subdirs[:] = [name for name in subdirs if name not in ignored]
+        traversable_dirs = []
+        for name in subdirs:
+            if name in ignored:
+                continue
+            path = Path(current_dir) / name
+            if path.is_symlink():
+                if include_symlinks:
+                    records.append({
+                        "path": _normalise_relative(path, root_path),
+                        "type": "symlink",
+                        "target": path.readlink().as_posix(),
+                    })
+            else:
+                traversable_dirs.append(name)
+        subdirs[:] = traversable_dirs
         for filename in filenames:
             path = Path(current_dir) / filename
             rel = _normalise_relative(path, root_path)
