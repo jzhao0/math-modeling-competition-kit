@@ -32,6 +32,24 @@ class RunnerTests(unittest.TestCase):
             self.assertEqual(report["commands"][0]["returncode"], 0)
             self.assertEqual(report["commands"][0]["missing_outputs"], [])
 
+    def test_missing_executable_yields_failed_run_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = {
+                "schema_version": 1,
+                "commands": [{
+                    "name": "missing-tool",
+                    "argv": ["__mmkit_missing_command_62f0e__"],
+                    "cwd": ".",
+                    "expected_outputs": [],
+                }],
+            }
+            report = run_clean_room(Path(tmp), manifest)
+            self.assertEqual(report["status"], "FAIL")
+            self.assertEqual(len(report["commands"]), 1)
+            self.assertEqual(report["commands"][0]["status"], "FAIL")
+            self.assertIsNone(report["commands"][0]["returncode"])
+            self.assertIn("command launch failed", report["commands"][0]["error"])
+
     def test_manifest_rejects_windows_drive_paths_on_any_host(self) -> None:
         with self.assertRaises(ValueError):
             validate_run_manifest({
