@@ -33,5 +33,24 @@ class ManifestTests(unittest.TestCase):
             self.assertNotEqual(before, after)
 
 
+    def test_symlink_directory_is_recorded_without_following_it(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "source").mkdir()
+            (root / "source" / "inside.txt").write_text("content", encoding="utf-8")
+            try:
+                (root / "alias").symlink_to(root / "source", target_is_directory=True)
+            except (OSError, NotImplementedError):
+                self.skipTest("directory symlinks are not available on this host")
+
+            entries = build_manifest(root, include_symlinks=True)["files"]
+            self.assertEqual([item["path"] for item in entries], ["alias", "source/inside.txt"])
+            self.assertEqual(entries[0]["type"], "symlink")
+            self.assertEqual(
+                [item["path"] for item in build_manifest(root)["files"]],
+                ["source/inside.txt"],
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
