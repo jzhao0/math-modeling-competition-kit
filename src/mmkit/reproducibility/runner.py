@@ -134,6 +134,13 @@ def run_clean_room(
                 error = f"timeout after {command.get('timeout_seconds', 300)} seconds"
                 stdout_tail = _tail((exc.stdout or "") if isinstance(exc.stdout, str) else "")
                 stderr_tail = _tail((exc.stderr or "") if isinstance(exc.stderr, str) else "")
+            except OSError as exc:
+                # Missing executables and OS launch errors are failed commands,
+                # not missing clean-room reports.
+                returncode = None
+                error = f"command launch failed: {type(exc).__name__}: {exc}"
+                stdout_tail = ""
+                stderr_tail = ""
             duration = round(time.monotonic() - started, 6)
 
             missing_outputs: list[str] = []
