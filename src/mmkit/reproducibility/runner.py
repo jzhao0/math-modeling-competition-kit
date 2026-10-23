@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 from .manifest import build_manifest, hash_file
@@ -19,7 +19,7 @@ DEFAULT_COPY_IGNORES = (".git", "__pycache__", ".pytest_cache", ".mypy_cache", "
 
 def _safe_relative(value: str, *, field: str) -> PurePosixPath:
     path = PurePosixPath(value.replace("\\", "/"))
-    if path.is_absolute() or any(part == ".." for part in path.parts):
+    if path.is_absolute() or PureWindowsPath(value).drive or any(part == ".." for part in path.parts):
         raise ValueError(f"{field} must stay inside the workspace: {value}")
     return path
 
@@ -141,6 +141,8 @@ def run_clean_room(
             for output in command.get("expected_outputs", []):
                 rel = _safe_relative(output, field=f"{name} expected output")
                 candidate = workspace_resolved.joinpath(*rel.parts)
+                if not candidate.resolve().is_relative_to(workspace_resolved):
+                    raise ValueError(f"expected output escaped workspace: {rel}")
                 if not candidate.exists():
                     missing_outputs.append(rel.as_posix())
                 elif candidate.is_file():
