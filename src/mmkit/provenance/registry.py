@@ -142,9 +142,16 @@ def _fingerprint_file(
             digest.update(chunk)
     sha256 = digest.hexdigest()
     if cache is not None and key is not None:
-        # Cache is per build/verify invocation only; changed file metadata
-        # causes the next reference to be hashed again.
-        cache[key] = (sha256, size)
+        # A file might have changed during this read. Do not reuse the digest
+        # on later references unless its identity, timestamps and size still
+        # match the state observed before opening it.
+        after = path.stat()
+        after_key = (
+            path, after.st_dev, after.st_ino, after.st_size,
+            after.st_mtime_ns, after.st_ctime_ns,
+        )
+        if key == after_key and size == after.st_size:
+            cache[key] = (sha256, size)
     return {"path": relpath, "sha256": sha256, "size": size}
 
 
