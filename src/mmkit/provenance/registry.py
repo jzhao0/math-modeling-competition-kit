@@ -327,9 +327,9 @@ def verify_claim_lock(
 
             try:
                 actual = _fingerprint_file(
-                            workspace, relpath, claim_id=claim_id, role=role,
-                            cache=fingerprint_cache,
-                        )
+                    workspace, relpath, claim_id=claim_id, role=role,
+                    cache=fingerprint_cache,
+                )
             except (FileNotFoundError, ValueError) as exc:
                 stale_reasons.append(f"{role} unavailable")
                 findings.append(
