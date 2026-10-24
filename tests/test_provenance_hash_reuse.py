@@ -10,6 +10,7 @@ import hashlib
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 from mmkit.provenance import build_claim_lock, verify_claim_lock, write_claim_lock
@@ -72,6 +73,33 @@ class SharedEvidenceDigestTests(unittest.TestCase):
             self.assertEqual(len(calls), 1)
             self.assertEqual(changed["status"], "STALE")
             self.assertEqual(changed["stale_claim_count"], 20)
+
+    def test_file_changed_during_hash_is_not_cached(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            evidence = root / "mutable.bin"
+            evidence.write_bytes(b"synthetic evidence bytes")
+            before = evidence.stat()
+            same = dict(
+                st_dev=before.st_dev, st_ino=before.st_ino,
+                st_size=before.st_size,
+                st_mtime_ns=before.st_mtime_ns, st_ctime_ns=before.st_ctime_ns,
+            )
+            changed = dict(same)
+            changed["st_mtime_ns"] += 1
+            cache = {}
+            with (
+                mock.patch.object(registry, "_resolve_evidence_file", return_value=evidence),
+                mock.patch.object(
+                    Path, "stat",
+                    side_effect=[SimpleNamespace(**same), SimpleNamespace(**changed)],
+                ),
+            ):
+                actual = registry._fingerprint_file(
+                    root, "mutable.bin", claim_id="Q1", role="artifact", cache=cache,
+                )
+            self.assertEqual(actual["size"], evidence.stat().st_size)
+            self.assertEqual(cache, {})
 
     def test_cached_and_uncached_claim_lock_are_identical(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
