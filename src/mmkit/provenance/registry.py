@@ -115,19 +115,37 @@ def _resolve_evidence_file(root: Path, relpath: str, *, claim_id: str, role: str
     return resolved
 
 
-def _fingerprint_file(root: Path, relpath: str, *, claim_id: str, role: str) -> dict[str, Any]:
+def _fingerprint_file(
+    root: Path, relpath: str, *, claim_id: str, role: str,
+    cache: dict[tuple[Any, ...], tuple[str, int]] | None = None,
+) -> dict[str, Any]:
+    # Resolve/validate EVERY reference even on a cache hit: a cached digest
+    # must not bypass symlink, existence, or workspace-containment checks.
     path = _resolve_evidence_file(root, relpath, claim_id=claim_id, role=role)
+    key: tuple[Any, ...] | None = None
+    if cache is not None:
+        metadata = path.stat()
+        key = (
+            path, metadata.st_dev, metadata.st_ino, metadata.st_size,
+            metadata.st_mtime_ns, metadata.st_ctime_ns,
+        )
+        cached = cache.get(key)
+        if cached is not None:
+            sha256, size = cached
+            return {"path": relpath, "sha256": sha256, "size": size}
+
     digest = hashlib.sha256()
     size = 0
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             size += len(chunk)
             digest.update(chunk)
-    return {
-        "path": relpath,
-        "sha256": digest.hexdigest(),
-        "size": size,
-    }
+    sha256 = digest.hexdigest()
+    if cache is not None and key is not None:
+        # Cache is per build/verify invocation only; changed file metadata
+        # causes the next reference to be hashed again.
+        cache[key] = (sha256, size)
+    return {"path": relpath, "sha256": sha256, "size": size}
 
 
 def _claim_semantics(row: dict[str, str]) -> dict[str, str]:
@@ -145,13 +163,17 @@ def build_claim_lock(root: str | Path, registry_path: str | Path) -> dict[str, A
     rows = load_claim_registry(registry_file)
 
     claims: list[dict[str, Any]] = []
+    fingerprint_cache: dict[tuple[Any, ...], tuple[str, int]] = {}
     for row in rows:
         claim_id = row["claim_id"]
         evidence: dict[str, Any] = {}
         for role in ("producer", "input", "artifact"):
             relpath = row[role]
             evidence[role] = (
-                _fingerprint_file(workspace, relpath, claim_id=claim_id, role=role)
+                _fingerprint_file(
+                    workspace, relpath, claim_id=claim_id, role=role,
+                    cache=fingerprint_cache,
+                )
                 if relpath
                 else None
             )
@@ -215,6 +237,7 @@ def verify_claim_lock(
 
     findings: list[dict[str, str]] = []
     claim_reports: list[dict[str, Any]] = []
+    fingerprint_cache: dict[tuple[Any, ...], tuple[str, int]] = {}
 
     for claim_id in sorted(current.keys() | locked.keys()):
         if claim_id not in locked:
@@ -278,7 +301,10 @@ def verify_claim_lock(
                         }
                     )
                     try:
-                        actual = _fingerprint_file(workspace, relpath, claim_id=claim_id, role=role)
+                        actual = _fingerprint_file(
+                            workspace, relpath, claim_id=claim_id, role=role,
+                            cache=fingerprint_cache,
+                        )
                     except (FileNotFoundError, ValueError) as exc:
                         actual = {"path": relpath, "error": str(exc)}
                     evidence_report[role] = {"status": "STALE", "expected": None, "actual": actual}
@@ -300,7 +326,10 @@ def verify_claim_lock(
                 continue
 
             try:
-                actual = _fingerprint_file(workspace, relpath, claim_id=claim_id, role=role)
+                actual = _fingerprint_file(
+                            workspace, relpath, claim_id=claim_id, role=role,
+                            cache=fingerprint_cache,
+                        )
             except (FileNotFoundError, ValueError) as exc:
                 stale_reasons.append(f"{role} unavailable")
                 findings.append(
